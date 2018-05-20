@@ -2,15 +2,15 @@ package model;
 
 public class Exemplar extends Livro {
     private boolean disponivel;
-    private int id;
+    private String id;
 
-    public Exemplar(String nomeAutor, String titulo, String subtitulo, String editora, String isbn, int id) {
+    public Exemplar(String nomeAutor, String titulo, String subtitulo, String editora, String isbn, String id) {
         super(nomeAutor, titulo, subtitulo, editora, isbn);
         this.disponivel = true;
         setId(id);
     }
 
-    public Exemplar(Livro livro, int id) {
+    public Exemplar(Livro livro, String id) {
         super(livro.getNomeAutor(), livro.getTitulo(), livro.getSubtitulo(), livro.getEditora(), livro.getIsbn());
         this.disponivel = true;
         setId(id);
@@ -25,11 +25,11 @@ public class Exemplar extends Livro {
     }
 
     public String getId() {
-        return (getIsbn() + "-" + id);
+        return this.id;
     }
 
-    private void setId(int id) {
-        this.id = id;
+    private void setId(String id) {
+        this.id = getIsbn() + "-" + id;
     }
 
     @Override
@@ -40,6 +40,7 @@ public class Exemplar extends Livro {
         sb.append("\nAutor: " + getNomeAutor());
         sb.append("\nEditora: " + getEditora());
         sb.append("\nId: " + getId());
+        sb.append("\n");
         return sb.toString();
     }
 }

@@ -1,76 +1,105 @@
 package model;
 
 public class Biblioteca {
-    private static int LIMITE = 10;
-    private ListaExemplares[] biblioteca;
-    private int prateleirasOcupadas;
-    private User[] usuarios;
-    private int usuariosCadastrados;
+    public static int LIMITE = 10;
+    private ListaExemplares[] prateleiras;
+    private ListaEmprestimos emprestimos;
+    private UserList usuarios = new UserList();
+    private int qtdPrateleiras;
 
     public Biblioteca() {
-        this.biblioteca = new ListaExemplares[LIMITE];
-        this.usuarios = new User[LIMITE];
-        this.prateleirasOcupadas = 0;
-        this.usuariosCadastrados = 0;
+        prateleiras = new ListaExemplares[LIMITE];
+        emprestimos = new ListaEmprestimos(0);
+        qtdPrateleiras = 0;
     }
 
-    public boolean addExemplares(int qtdExemplar, Livro livro) {
-        boolean deuCerto = false;
-        if(prateleirasOcupadas < LIMITE) {
-            biblioteca[prateleirasOcupadas] = new ListaExemplares(qtdExemplar, livro);
-            this.prateleirasOcupadas++;
-            deuCerto = true;
+    public boolean addExemplares(Livro livro, int qtdExemplares) {
+        boolean add = false;
+        if(livro != null) {
+            if(qtdPrateleiras < LIMITE) {
+                prateleiras[qtdPrateleiras] = new ListaExemplares(qtdExemplares, livro);
+                qtdPrateleiras++;
+                add = true;
+                ListaEmprestimos e = new ListaEmprestimos(qtdObras());
+                e.aumentaLimite(emprestimos);
+                emprestimos = e;
+            }
         }
-        return deuCerto;
+        return add;
     }
 
-    public boolean addUsuario(User user) {
-        boolean deuCerto = false;
-        if(usuariosCadastrados < LIMITE) {
-            usuarios[usuariosCadastrados] = user;
-            this.usuariosCadastrados++;
-            deuCerto = true;
+    public int qtdObras() {
+        int contador = 0;
+        for(int i = 0; i < qtdPrateleiras; i++) {
+            contador += prateleiras[i].getQtdExemplar();
         }
-        return deuCerto;
+        return contador;
     }
 
-    public boolean emprestimoExemplar(String titulo, int prontuario, String senha) {
-        boolean deuCerto = false;
-        Exemplar novo = null;
-        int i = 0;
-        int j = 0;
-        while(i < this.prateleirasOcupadas && !deuCerto) {
-            if(biblioteca[i].getAt(0).getTitulo().equals(titulo)) {
-                while(j < this.usuariosCadastrados && !deuCerto) {
-                    if(usuarios[j].getProntuario() == prontuario) {
-                        if(usuarios[j].validarSenha(senha)) {
-                            if(usuarios[j].isFull()) {
-                                novo = biblioteca[i].emprestarExemplar();
-                                if(novo != null) {
-                                    usuarios[j].setExemplares(novo);
-                                }
-                            }
-                        }
-                    }
-                    j++;
+    public ListaExemplares getListaExemplares(String titulo) {
+        ListaExemplares e = null;
+        if(titulo != null) {
+            int i = 0;
+            boolean deuCerto = false;
+            while(i < LIMITE && !deuCerto) {
+                if(prateleiras[i].getAt(0).getTitulo().equals(titulo)) {
+                    e = prateleiras[i];
+                    deuCerto = true;
                 }
+                i++;
             }
-            i++;
+        }
+        return e;
+    }
+
+    public boolean addUsuario(User u) {
+        return usuarios.addUsuario(u);
+    }
+
+
+    public boolean emprestar(String titulo, int prontuario) {
+        boolean deuCerto = false;
+        Exemplar e = getListaExemplares(titulo).exemplarDisponivel();
+        User u = usuarios.getUsuario(prontuario);
+        if(e != null && u != null) {
+            deuCerto = emprestimos.registraEmprestimo(u, e);
+            e.setDisponivel(false);
         }
         return deuCerto;
     }
 
-    public boolean devolucaoExemplar(Exemplar exemplar) {
+    public boolean devolver(int prontuario, String titulo) {
         boolean deuCerto = false;
-        int i = 0;
-        while(i < this.prateleirasOcupadas && !deuCerto) {
-            if(biblioteca[i].getAt(0).getTitulo().equals(exemplar.getTitulo())) {
-                biblioteca[i].devolverExemplar(exemplar);
-                deuCerto = true;
-            }
-            i++;
+        Exemplar e = emprestimos.registraDevolucao(prontuario, titulo);
+        if(e != null) {
+            e.setDisponivel(true);
+            deuCerto = true;
         }
         return deuCerto;
+    }
+
+    public String relatorioAluno() {
+        return usuarios.toString();
+    }
+
+    public String relatorioLivrosEmprestados() {
+        return emprestimos.toString();
+    }
+
+    public String relatorioEmprestimos() {
+        return emprestimos.relatorioEmprestimos();
+    }
+
+    public String relatorioExemplares() {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < qtdPrateleiras; i++) {
+            sb.append("Livro: ");
+            sb.append(prateleiras[i].getAt(0).getTitulo());
+            sb.append(" - x");
+            sb.append(prateleiras[i].qtdDisponivel());
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
 }

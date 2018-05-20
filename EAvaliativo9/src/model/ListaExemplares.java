@@ -8,8 +8,7 @@ public class ListaExemplares {
     public ListaExemplares(int qtdExemplar, Livro livro) {
         setQtdExemplar(qtdExemplar);
         this.exemplares = new Exemplar[this.getQtdExemplar()];
-        prateleiraExemplar(livro);
-
+        criarPrateleira(livro);
     }
 
     private void setQtdExemplar(int qtdExemplar) {
@@ -30,36 +29,33 @@ public class ListaExemplares {
         return this.exemplares[pos];
     }
 
-    private void prateleiraExemplar(Livro livro) {
+    private void criarPrateleira(Livro livro) {
         for(int i = 0; i < getQtdExemplar(); i++) {
-            exemplares[i] = new Exemplar(livro, (i+1));
+            exemplares[i] = new Exemplar(livro, String.valueOf(i+1));
         }
     }
 
-    public Exemplar emprestarExemplar() {
+    public Exemplar exemplarDisponivel() {
+        Exemplar e = null;
         int i = 0;
-        Exemplar exemplar = null;
-        while(i < this.qtdExemplar && exemplar == null) {
+        boolean disponivel = false;
+        while (i < LIMITE && !disponivel) {
             if(exemplares[i].getDisponivel()) {
-                exemplares[i].setDisponivel(false);
-                exemplar = exemplares[i];
+                e = exemplares[i];
+                disponivel = true;
             }
             i++;
         }
-        return exemplar;
+        return e;
     }
 
-    public boolean devolverExemplar(Exemplar exemplar) {
-        boolean deuCerto = false;
-        int i = 0;
-        while(i < this.qtdExemplar && !deuCerto) {
-            if(exemplar.toString().equals(exemplares[i].toString())) {
-                exemplares[i].setDisponivel(true);
-                deuCerto = true;
+    public int qtdDisponivel() {
+        int e = 0;
+        for(int i = 0; i < qtdExemplar; i++) {
+            if(exemplares[i].getDisponivel()) {
+                e++;
             }
-            i++;
         }
-        return deuCerto;
+        return e;
     }
-
 }
